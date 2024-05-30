@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BookStore.Book.Dto;
 using BookStore.Book.repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,24 +9,26 @@ namespace BookStore.Book;
 [ApiController]
 public class BooksController : Controller
 {
-    private readonly IBookRepository bookRepository;
-    private readonly IMapper mapper;
+    private readonly IBookRepository _bookRepository;
+    private readonly IMapper _mapper;
 
     public BooksController(IBookRepository bookRepository, IMapper mapper)
     {
-        this.bookRepository = bookRepository;
-        this.mapper = mapper;
+        _bookRepository = bookRepository;
+        _mapper = mapper;
     }
 
     [Route("{id:int}")]
     [HttpGet]
     public async Task<IActionResult> GetByBookById([FromRoute] int id)
     {
-        var book = await bookRepository.GetBookById(id);
-        if (book == null) ;
+        var book = await _bookRepository.GetBookById(id);
+        if (book == null)
         {
-            return NotFound();
+            return NotFound("Book not found");
         }
-        return Ok();
+        var bookDto = _mapper.Map<CreateBookDto>(book);
+
+        return Ok(bookDto);
     }
 }

@@ -1,10 +1,19 @@
-﻿namespace BookStore.Book.repository;
+﻿using BookStore.Database;
+using Microsoft.EntityFrameworkCore;
+
+namespace BookStore.Book.repository;
 
 public class SqlBookRepository : IBookRepository
 {
-    public Task<Book> GetBookById(int id)
+    private readonly BookStoreDbContext _bookStoreDbContext;
+
+    public SqlBookRepository(BookStoreDbContext bookStoreDbContext)
     {
-        throw new NotImplementedException();
+        _bookStoreDbContext = bookStoreDbContext;
+    }
+    public async Task<Book?> GetBookById(int id)
+    {
+        return await _bookStoreDbContext.Books.FirstOrDefaultAsync(book => book.id == id);
     }
 
     public Task<List<Book>> GetAllBooks()

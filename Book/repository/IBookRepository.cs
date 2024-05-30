@@ -2,7 +2,7 @@
 
 public interface IBookRepository
 {
-    Task<Book> GetBookById(int id);
+    Task<Book?> GetBookById(int id);
 
     Task<List<Book>> GetAllBooks();
     

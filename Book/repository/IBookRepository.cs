@@ -1,10 +1,12 @@
-﻿namespace BookStore.Book.repository;
+﻿using BookStore.Helper;
+
+namespace BookStore.Book.repository;
 
 public interface IBookRepository
 {
     Task<Book?> GetBookById(int id);
 
-    Task<List<Book>> GetAllBooks();
+    Task<List<Book>> GetAllBooks(BookPaginationDto bookPaginationDto);
     
     Task<Book> CreateBook();
 

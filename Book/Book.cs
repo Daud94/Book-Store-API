@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BookStore.Book.Enums;
 
 namespace BookStore.Book;
 
@@ -23,7 +24,7 @@ public class Book
     [MaxLength(1000)]
     public string? description { get; set; }
 
-    public string genre { get; set; }
+    public Genre genre { get; set; }
     
     [ForeignKey(nameof(Author))]
     public int authorId { get; set; }

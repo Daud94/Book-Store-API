@@ -1,4 +1,5 @@
 ﻿using BookStore.Database;
+using BookStore.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Book.repository;
@@ -15,10 +16,51 @@ public class SqlBookRepository : IBookRepository
     {
         return await _bookStoreDbContext.Books.FirstOrDefaultAsync(book => book.id == id);
     }
-
-    public Task<List<Book>> GetAllBooks()
+    
+    public async Task<List<Book>> GetAllBooks(BookPaginationDto bookPaginationDto)
     {
-        throw new NotImplementedException();
+        var books = _bookStoreDbContext.Books.AsQueryable();
+        if(!string.IsNullOrWhiteSpace(bookPaginationDto.title))
+        {
+            books = books.Where(book => book.title.Contains(bookPaginationDto.title));
+            
+        }
+        
+        if(!string.IsNullOrWhiteSpace(bookPaginationDto.isbn))
+        {
+            books = books.Where(book => book.isbn.Equals(bookPaginationDto.title, StringComparison.OrdinalIgnoreCase));
+            
+        }
+        
+        if(!string.IsNullOrWhiteSpace(bookPaginationDto.description))
+        {
+            books = books.Where(book => book.description != null && book.description.Contains(bookPaginationDto.description));
+            
+        }
+        
+        if(bookPaginationDto.genre != null)
+        {
+            books = books.Where(book =>  book.genre.Equals(bookPaginationDto.genre));
+            
+        }
+        
+        if(bookPaginationDto is { startDate: not null, endDate: not null })
+        {
+            books = books.Where(book =>
+                book.createdAt > bookPaginationDto.endDate && bookPaginationDto.startDate < book.createdAt);
+
+        }
+
+        if (bookPaginationDto.inAscending)
+        {
+            books = books.OrderBy(book => book.title);
+        }
+        else
+        {
+            books = books.OrderByDescending(book => book.title);
+        }
+
+        return await books.Skip(bookPaginationDto.Skip()).Take(bookPaginationDto.limit).ToListAsync();
     }
 
     public Task<Book> CreateBook()

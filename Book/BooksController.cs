@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BookStore.Book.Dto;
 using BookStore.Book.repository;
+using BookStore.Helper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Book;
@@ -29,6 +30,17 @@ public class BooksController : Controller
         }
         var bookDto = _mapper.Map<CreateBookDto>(book);
 
-        return Ok(bookDto);
+        return Ok(new
+        {
+            success = true,
+            message = "Book fetched",
+            data = bookDto
+        });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllBooks([FromQuery] BookPaginationDto bookPaginationDto)
+    {
+        
     }
 }

@@ -41,4 +41,11 @@ public class SqlUserRepository : IUserRepository
     {
         return await _bookStoreDbContext.Users.FirstOrDefaultAsync(user => user.Id == id);
     }
+
+    
+
+    public bool CheckPassword(string password, string hashedPassword)
+    {
+        return _passwordHelper.VerifyPassword(password, hashedPassword);
+    }
 }

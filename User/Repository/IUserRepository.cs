@@ -8,4 +8,6 @@ public interface IUserRepository
 
     Task<User> GetUserByEmail(string email);
     Task<User> GetUserById(int id);
+
+   bool CheckPassword(string password, string hashedPassword);
 }

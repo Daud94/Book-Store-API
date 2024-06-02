@@ -11,4 +11,5 @@ public class BookStoreDbContext : DbContext
 
     public DbSet<Book.Book> Books { get; set; }
     public DbSet<Author.Author> Authors { get; set; }
+    public DbSet<User.User> Users { get; set; }
 }

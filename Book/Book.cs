@@ -9,27 +9,26 @@ public class Book
 {
     public Book()
     {
-        createdAt = DateTime.Now;
+        CreatedAt = DateTime.Now;
     }
-    [Key]
-    public int id { get; set; }
-    
-    [Required]
-    public string title { get; set; }
-    
-    [Required]
-    public string isbn { get; set; }
-    
-    [Required]
-    [MaxLength(1000)]
-    public string? description { get; set; }
 
-    public Genre genre { get; set; }
-    
-    [ForeignKey(nameof(Author))]
-    public int authorId { get; set; }
+    [Key] public int Id { get; set; }
+
+    [Required] [MaxLength(100)] public string Title { get; set; }
+
+    [Required] [MaxLength(100)] public string Isbn { get; set; }
+
+    [Required] [MaxLength(1000)] public string? Description { get; set; }
+
+    public Genre Genre { get; set; }
+
+    [ForeignKey(nameof(Author))] [Required] public int AuthorId { get; set; }
 
     public Author.Author Author { get; set; }
-    
-    public DateTime createdAt { get; set; }
+
+    [ForeignKey(nameof(User))] [Required] public int UserId { get; set; }
+
+    public User.User User { get; set; }
+
+    public DateTime CreatedAt { get; set; }
 }

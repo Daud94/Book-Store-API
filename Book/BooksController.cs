@@ -38,9 +38,9 @@ public class BooksController : Controller
         });
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAllBooks([FromQuery] BookPaginationDto bookPaginationDto)
-    {
-        
-    }
+    // [HttpGet]
+    // public async Task<IActionResult> GetAllBooks([FromQuery] BookPaginationDto bookPaginationDto)
+    // {
+    //     
+    // }
 }

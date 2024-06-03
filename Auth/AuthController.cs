@@ -10,12 +10,13 @@ namespace BookStore.Auth;
 [ApiController]
 public class AuthController : Controller
 {
-    private readonly SqlUserRepository _sqlUserRepository;
-    private readonly TokenRepository _tokenRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly ITokenRepository _tokenRepository;
 
-    public AuthController(SqlUserRepository sqlUserRepository, TokenRepository tokenRepository)
+    public AuthController(IUserRepository userRepository,
+        ITokenRepository tokenRepository)
     {
-        _sqlUserRepository = sqlUserRepository;
+        _userRepository = userRepository;
         _tokenRepository = tokenRepository;
     }
 
@@ -24,28 +25,34 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> Register(CreateUserDto createUserDto)
     {
-        var userExist = await _sqlUserRepository.GetUserByEmail(createUserDto.Email);
+        // var userExist = await _sqlUserRepository.GetUserByEmail(createUserDto.Email);
+        var userExist = await _userRepository.GetUserByEmail(createUserDto.Email);
+
         if (userExist != null)
         {
             return Conflict("User exists with the email");
         }
 
-        await _sqlUserRepository.CreateUser(createUserDto);
+        await _userRepository.CreateUser(createUserDto);
 
-        return Ok("Registration successful!");
+        return Ok(new
+        {
+            success = true,
+            message = "Registration successful!",
+        });
     }
 
     [Route("Login")]
     [HttpPost]
     public async Task<IActionResult> Login(LoginRequestDto loginRequestDto)
     {
-        var existingUser = await _sqlUserRepository.GetUserByEmail(loginRequestDto.Email);
+        var existingUser = await _userRepository.GetUserByEmail(loginRequestDto.Email);
         if (existingUser == null)
         {
             return NotFound("User not found");
         }
 
-        var isPasswordValid = _sqlUserRepository.CheckPassword(loginRequestDto.Password, existingUser.Password);
+        var isPasswordValid = _userRepository.CheckPassword(loginRequestDto.Password, existingUser.Password);
 
         if (!isPasswordValid)
         {

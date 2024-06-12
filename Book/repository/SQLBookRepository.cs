@@ -1,5 +1,8 @@
-﻿using BookStore.Database;
+﻿using AutoMapper;
+using BookStore.Book.Dto;
+using BookStore.Database;
 using BookStore.Helper;
+using BookStore.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Book.repository;
@@ -7,51 +10,50 @@ namespace BookStore.Book.repository;
 public class SqlBookRepository : IBookRepository
 {
     private readonly BookStoreDbContext _bookStoreDbContext;
+    private readonly IMapper _mapper;
 
-    public SqlBookRepository(BookStoreDbContext bookStoreDbContext)
+    public SqlBookRepository(BookStoreDbContext bookStoreDbContext, IMapper mapper)
     {
         _bookStoreDbContext = bookStoreDbContext;
+        _mapper = mapper;
     }
+
     public async Task<Book?> GetBookById(int id)
     {
         return await _bookStoreDbContext.Books.FirstOrDefaultAsync(book => book.Id == id);
     }
-    
+
     public async Task<List<Book>> GetAllBooks(BookPaginationDto bookPaginationDto)
     {
         var books = _bookStoreDbContext.Books.AsQueryable();
-        if(!string.IsNullOrWhiteSpace(bookPaginationDto.title))
+        if (!string.IsNullOrWhiteSpace(bookPaginationDto.Title))
         {
-            books = books.Where(book => book.Title.Contains(bookPaginationDto.title));
-            
+            books = books.Where(book => book.Title.Contains(bookPaginationDto.Title));
         }
-        
-        if(!string.IsNullOrWhiteSpace(bookPaginationDto.isbn))
+
+        if (!string.IsNullOrWhiteSpace(bookPaginationDto.Isbn))
         {
-            books = books.Where(book => book.Isbn.Equals(bookPaginationDto.title, StringComparison.OrdinalIgnoreCase));
-            
+            books = books.Where(book => book.Isbn.Equals(bookPaginationDto.Title, StringComparison.OrdinalIgnoreCase));
         }
-        
-        if(!string.IsNullOrWhiteSpace(bookPaginationDto.description))
-        {
-            books = books.Where(book => book.Description != null && book.Description.Contains(bookPaginationDto.description));
-            
-        }
-        
-        if(bookPaginationDto.genre != null)
-        {
-            books = books.Where(book =>  book.Genre.Equals(bookPaginationDto.genre));
-            
-        }
-        
-        if(bookPaginationDto is { startDate: not null, endDate: not null })
+
+        if (!string.IsNullOrWhiteSpace(bookPaginationDto.Description))
         {
             books = books.Where(book =>
-                book.CreatedAt > bookPaginationDto.endDate && bookPaginationDto.startDate < book.CreatedAt);
-
+                book.Description != null && book.Description.Contains(bookPaginationDto.Description));
         }
 
-        if (bookPaginationDto.inAscending)
+        if (bookPaginationDto.Genre != null)
+        {
+            books = books.Where(book => book.Genre.Equals(bookPaginationDto.Genre));
+        }
+
+        if (bookPaginationDto is { StartDate: not null, EndDate: not null })
+        {
+            books = books.Where(book =>
+                book.CreatedAt > bookPaginationDto.EndDate && bookPaginationDto.StartDate < book.CreatedAt);
+        }
+
+        if (bookPaginationDto.InAscending)
         {
             books = books.OrderBy(book => book.Title);
         }
@@ -60,17 +62,34 @@ public class SqlBookRepository : IBookRepository
             books = books.OrderByDescending(book => book.Title);
         }
 
-        return await books.Skip(bookPaginationDto.Skip()).Take(bookPaginationDto.limit).ToListAsync();
+        return await books.Skip(bookPaginationDto.Skip()).Take(bookPaginationDto.Limit).ToListAsync();
     }
 
-    public Task<Book> CreateBook()
+    public async Task<Book> CreateBook(CreateBookDto createBookDto, int userId)
     {
-        throw new NotImplementedException();
+        
+        var book = _mapper.Map<Book>(createBookDto);
+        var user = await _bookStoreDbContext.Books.AddAsync(book);
+        await _bookStoreDbContext.SaveChangesAsync();
+        return book;
     }
 
-    public Task<Book> UpdateBook(int id, Book book)
+    public async Task<Book> UpdateBook(int id, UpdateBookDto updateBookDto)
     {
-        throw new NotImplementedException();
+        var existingBook = await GetBookById(id);
+
+        var book = _mapper.Map<Book>(updateBookDto);
+
+
+        existingBook.Title = book.Title;
+        existingBook.Isbn = book.Isbn;
+        existingBook.Description = book.Description;
+        existingBook.Genre = book.Genre;
+        existingBook.AuthorId = book.AuthorId;
+
+        await _bookStoreDbContext.SaveChangesAsync();
+        return existingBook;
+
     }
 
     public Task<Book?> DeleteBook(int id)
